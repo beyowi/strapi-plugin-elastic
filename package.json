@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@elastic/elasticsearch": "^7.8.0",
+    "aws-elasticsearch-js": "^1.0.3",
     "axios": "^0.20.0",
     "lodash": "^4.17.21",
     "moment": "^2.27.0"

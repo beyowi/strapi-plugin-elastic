@@ -1,4 +1,7 @@
+require('dotenv').config();
+
 const { Client } = require('@elastic/elasticsearch');
+const { createConnector } = require('aws-elasticsearch-js');
 
 const {
   helper: { generateMainConfig, initialStrapi },
@@ -19,7 +22,7 @@ module.exports = async () => {
 
     const { connection } = strapi.config.elasticsearch;
 
-    const client = new Client(connection);
+    const client = new Client({ nodes: [process.env.ELASTICSEARCH_HOST], Connection: createConnector({ region: process.env.AWS_REGION })});
 
     strapi.elastic = client;
 
