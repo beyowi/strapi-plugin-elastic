@@ -4,14 +4,14 @@ const {
 } = require('../services');
 
 module.exports = {
-  fetchModels: (ctx) => {
+  fetchModels: ctx => {
     const { models } = strapi.config.elasticsearch;
 
-    const enabledModels = models.filter((model) => model.enabled);
+    const enabledModels = models.filter(model => model.enabled);
 
     const sortedEnabledModels = _.orderBy(enabledModels, ['model'], ['asc']);
 
-    const disabledModels = models.filter((model) => !model.enabled);
+    const disabledModels = models.filter(model => !model.enabled);
 
     const sortedDisabledModels = _.orderBy(disabledModels, ['model'], ['asc']);
 
@@ -21,19 +21,12 @@ module.exports = {
 
     const response = _.map(
       allModels,
-      _.partialRight(_.pick, [
-        'model',
-        'plugin',
-        'index',
-        'migration',
-        'pk',
-        'enabled',
-      ])
+      _.partialRight(_.pick, ['model', 'plugin', 'index', 'migration', 'pk', 'enabled'])
     );
 
     return ctx.send(response);
   },
-  fetchModel: async (ctx) => {
+  fetchModel: async ctx => {
     const { index, _start, _limit } = ctx.query;
     let data, count, map;
     let status = {};
@@ -116,20 +109,20 @@ module.exports = {
       status,
     });
   },
-  migrateModels: async (ctx) => {
+  migrateModels: async ctx => {
     await ctx.send({
       message: 'on progress it can take a few minuets',
     });
 
     strapi.elastic.migrateModels();
   },
-  migrateModel: async (ctx) => {
+  migrateModel: async ctx => {
     const { model } = ctx.request.body;
 
     await strapi.elastic.migrateModel(model);
     return ctx.send({ success: true });
   },
-  generateIndexConfig: async (ctx) => {
+  generateIndexConfig: async ctx => {
     const data = ctx.request.body;
     const { model } = ctx.params;
 
@@ -149,7 +142,7 @@ module.exports = {
     });
 
     const { models } = strapi.config.elasticsearch;
-    const targetModel = models.find((item) => item.model === model);
+    const targetModel = models.find(item => item.model === model);
 
     await generateMappings({
       data: map.body['strapi_elastic_lab'],
@@ -158,11 +151,11 @@ module.exports = {
 
     return ctx.send({ success: true });
   },
-  createIndex: async (ctx) => {
+  createIndex: async ctx => {
     const { model } = ctx.request.body;
 
     const { models } = strapi.config.elasticsearch;
-    const targetModel = models.find((item) => item.model === model);
+    const targetModel = models.find(item => item.model === model);
 
     const mapping = await findMappingConfig({ targetModel });
 
@@ -180,11 +173,11 @@ module.exports = {
 
     return ctx.send({ success: true });
   },
-  deleteIndex: async (ctx) => {
+  deleteIndex: async ctx => {
     const { model } = ctx.request.body;
 
     const { models } = strapi.config.elasticsearch;
-    const targetModel = models.find((item) => item.model === model);
+    const targetModel = models.find(item => item.model === model);
 
     try {
       await strapi.elastic.indices.delete({
@@ -194,5 +187,13 @@ module.exports = {
     } catch (e) {
       return ctx.throw(500);
     }
+  },
+  search: async ctx => {
+    const { q, size } = ctx.query;
+    const result = await strapi.elastic.search({
+      q: q,
+      size: size,
+    });
+    ctx.send(result);
   },
 };
